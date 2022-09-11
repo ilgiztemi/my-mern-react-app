@@ -2,17 +2,25 @@ const express = require( "express" );
 const app = express();
 const bodyParser = require( "body-parser" );
 const cors = require( "cors" );
-const path = require( "path" );
 const mongoose = require( "mongoose" );
-const port = process.env.PORT || 4002;
+const path = require("path");
 require( "dotenv" ).config();
 const { MONGO_URI } = process.env;
+const port = process.env.PORT || 4002;
 
 app.use( bodyParser.json() );
 app.use( cors() );
 
 //mongoose
 mongoose.connect( MONGO_URI )
+
+
+// path 
+
+app.use(express.static(path.resolve(__dirname, "./client/build")));
+app.get("*", function (request, response) {
+  response.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
+});
 
 //data schema and model
 const movieSchema = {
@@ -38,17 +46,23 @@ app.post( '/newMovie', ( req, res ) => {
     } )
     newMovie.save();
 } )
-app.delete('/delete/:id', (req, res) => {
-    Movie.findByIdAndDelete({_id: req.params.id}, (err, data) => {
-        if(err) {
-            console.log(err);
+app.delete( '/delete/:id', ( req, res ) => {
+    Movie.findByIdAndDelete( { _id: req.params.id }, ( err, data ) => {
+        if ( err ) {
+            console.log( err );
         }
         else {
-            console.log("movie deleted", data)
+            console.log( "movie deleted", data )
         }
-    })
-})
+    } )
+} )
+// if ( process.env.NODE_ENV === 'production' ) {
+//     app.use( express.static( 'client/build' ) )
+//     app.get( "*", ( req, res ) => {
+//         res.sendFile( path.resolve( __dirname, "client", "build", "index.html" ) );
+//     } )
+// }
 
 app.listen( port, () => {
-    console.log( "express is running" )
+    console.log( "express is running"+` ${port}` )
 } )
